@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galgje</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+        }
+        #wordDisplay {
+            font-size: 2em;
+            letter-spacing: 10px;
+            margin-bottom: 20px;
+        }
+        #message {
+            font-size: 1.5em;
+            color: #d32f2f;
+            font-weight: bold;
+        }
+        #letterInput {
+            width: 50px;
+            font-size: 1.5em;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #guesses {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+        #gallows {
+            margin: 20px;
+            height: 250px;
+            width: 200px;
+        }
+        button {
+    background-color: #246cfb;
+    color: white;
+    padding: 10px 20px;
+    font-size: 1.2em;
+    cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Galgje</h1>
+    <canvas id="gallows" width="200" height="250"></canvas>
+    <div id="wordDisplay">_ _ _ _ _</div>
+    <input type="text" id="letterInput" maxlength="1" placeholder="A-Z">
+    <button onclick="guessLetter()">Gok</button>
+    <div id="message"></div>
+    <div id="guesses">Gebruikte letters: <span id="guessedLetters"></span></div>
+    
+    <script>
+        const words = [ // Woordenlijst
+            "APPEL", "BANAAN", "CITROEN", "DRUIF", "EI", "FIETS", "GITAAR", "HOND", "IGLO", "JAS",
+            "KAMEEL", "LAMP", "MUUR", "NACHT", "OCEAAN", "PAARD", "QUIZ", "ROOS", "SPOOR", "TREIN",
+            "UI", "VARKEN", "WOLK", "XYLOFOON", "YOGA", "ZEE", "AUTO", "BOEK", "CIRKEL", "DUIF",
+            "EILAND", "FLUIT", "GROEN", "HUIS", "IJS", "KLEUR", "LEPEL", "MUIS", "NEUS", "OLIFANT",
+            "PARK", "RAAM", "SPELD", "TAFEL", "UIT", "VIS", "WAGEN", "ZAAG", "ZEIL", "ZON",
+            "AARDBEI", "BLOEM", "CACTUS", "DOOS", "EEND", "FLAMINGO", "GORILLA", "HEMEL", "INKT", "JACHT",
+            "KABOUTER", "LEEUW", "MUS", "NIEUW", "OORLOG", "POTLOOD", "QUICHE", "RADIATOR", "STEEN", "TULP",
+            "UNIVERSUM", "VALK", "WATER", "XYLITOL", "YOGHURT", "ZEBRA", "ANKER", "BOOM", "CAMEE", "DOORN",
+            "EMMER", "FLUWEEL", "GLAS", "HAAS", "INSECT", "KUSSEN", "LUIER", "MAAN", "NAALD", "OBELISK",
+            "PANTER", "RIEM", "SCHIP", "TIJGER", "UITZICHT", "VAAS", "WOORD", "ZALM", "ZOEKEN", "ZOMER"
+        ];
+        
+        let word = words[Math.floor(Math.random() * words.length)];
+        let displayWord = Array(word.length).fill("_");
+        let guessedLetters = [];
+        let attempts = 6;
+
+        document.getElementById("wordDisplay").innerText = displayWord.join(" ");
+        drawGallows();
+
+        function guessLetter() {
+            const input = document.getElementById("letterInput").value.toUpperCase();
+            document.getElementById("letterInput").value = "";
+
+            if (input.length !== 1 || !input.match(/[A-Z]/)) {
+                alert("Voer een geldige letter in (A-Z).");
+                return;
+            }
+            if (guessedLetters.includes(input)) {
+                alert("Deze letter heb je al geprobeerd!");
+                return;
+            }
+
+            guessedLetters.push(input);
+            document.getElementById("guessedLetters").innerText = guessedLetters.join(", ");
+
+            if (word.includes(input)) {
+                for (let i = 0; i < word.length; i++) {
+                    if (word[i] === input) {
+                        displayWord[i] = input;
+                    }
+                }
+                document.getElementById("wordDisplay").innerText = displayWord.join(" ");
+            } else {
+                attempts--;
+                drawGallows();
+                document.getElementById("message").innerText = `FOUT! ${attempts} ❤️`;
+            }
+
+            if (attempts === 0) {
+                document.getElementById("message").innerText = `HELAAS! Het woord was: ${word}`;
+                endGame();
+            }
+            if (!displayWord.includes("_")) {
+                document.getElementById("message").innerText = "GEFELICITEERD! 🎉 Je hebt het woord geraden!";
+                document.getElementById("message").style.color = "green"; 
+                endGame();
+            }
+        }
+
+        function drawGallows() {
+            const canvas = document.getElementById("gallows");
+            const ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = "#000";
+            ctx.lineWidth = 5;
+
+            ctx.beginPath();
+            ctx.moveTo(50, 200);
+            ctx.lineTo(150, 200);
+            ctx.moveTo(100, 200);
+            ctx.lineTo(100, 50);
+            ctx.lineTo(150, 50);
+            ctx.lineTo(150, 80);
+            ctx.stroke();
+
+            // Tekenen van het poppetje
+            if (attempts < 6) {
+                // Hoofd
+                ctx.beginPath();
+                ctx.arc(150, 90, 10, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            if (attempts < 5) {
+                // Lichaam
+                ctx.beginPath();
+                ctx.moveTo(150, 100);
+                ctx.lineTo(150, 150);
+                ctx.stroke();
+            }
+            if (attempts < 4) {
+                // Linker arm
+                ctx.beginPath();
+                ctx.moveTo(150, 110);
+                ctx.lineTo(130, 130);
+                ctx.stroke();
+            }
+            if (attempts < 3) {
+                // Rechter Arm
+                ctx.beginPath();
+                ctx.moveTo(150, 110);
+                ctx.lineTo(170, 130);
+                ctx.stroke();
+            }
+            if (attempts < 2) {
+                // Linker Been
+                ctx.beginPath();
+                ctx.moveTo(150, 150);
+                ctx.lineTo(130, 180);
+                ctx.stroke();
+            }
+            if (attempts < 1) {
+                // Rechter Been
+                ctx.beginPath();
+                ctx.moveTo(150, 150);
+                ctx.lineTo(170, 180);
+                ctx.stroke();
+            }
+        }
+
+        function endGame() {
+            document.getElementById("letterInput").disabled = true;
+            document.querySelector("button").disabled = true;
+        }
+    </script>
+</body>
+</html>
